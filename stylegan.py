@@ -14,6 +14,7 @@ class StyleGAN:
         self.pickle_path = pickle_path
         self.Gs, self.fmt = self.load_Gs()
 
+　　### モデルを読み込む
     def load_Gs(self):
         tflib.init_tf()
         with open(self.pickle_path, 'rb') as f:
@@ -21,6 +22,7 @@ class StyleGAN:
         fmt = dict(func=tflib.convert_images_to_uint8, nchw_to_nhwc=True)
         return Gs, fmt
 
+    ### 中間潜在変数を生成する
     def generate_dlatent(self, seed):
         src_seeds = range(seed)
         src_latents = np.stack(np.random.RandomState(seed).randn(self.Gs.input_shape[1]) for seed in src_seeds)
@@ -29,10 +31,12 @@ class StyleGAN:
         print("src_dlatents.shape : "+str(src_dlatents.shape))
         return src_dlatents
 
+    ### 画像を生成する
     def generate_image(self, dlatents):
         src_images = self.Gs.components.synthesis.run(dlatents, randomize_noise=False, num_gpus=1, output_transform=self.fmt)
         return src_images
 
+    ### 画像を表示する（npyファイルがあれば、読み込むことも可能）
     def plot_image(self, dlatents=None, npy_path=None):
         if npy_path is not None:
             dlatents = np.load(npy_path)
@@ -41,6 +45,7 @@ class StyleGAN:
             plt.imshow(image[0])
             plt.show()
 
+    ### 画像を保存する（画像の生成に使用した潜在変数を保存したければ、set_saveをTrueにし、dlatents_nameを指定する）
     def save_image(self, dlatents, file_name, set_save=False, dlatents_name=None):
         bar = tqdm(range(dlatents.shape[0]))
         for i in bar:
